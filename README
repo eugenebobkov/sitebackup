@@ -1,0 +1,18 @@
+create mysql user *_backup (MySQL databases)
+grant SELECT and LOCK TABLE on target database to *_backup user
+SSH Setup
+Generate putty key (SSH Shell Access->Manage SSH Keys-> Generate New)
+Authorize key (SSH Shell Access->Manage SSH Keys->Manage Authorization)
+Option 1: 
+Generate key in PUTTY format for Private key and download it in ppk format
+Connect to the server using key and passphrase
+Get public key from backup account (.ssh/id_rsa.pub) and add it to target authorized_keys and authorized_keys2 files
+Option 2:
+Get public key from backup account (.ssh/id_rsa.pub) and add it to target authorized_keys and authorized_keys2 files using File Manager
+
+scp bkp-0.10.tar.gz target-user@target-site.com:~/
+ssh -C target-user@target-site.com "tar xfz bkp-0.10.tar.gz"
+ssh -C target-user@target-site.com "chmod 700 ~/backup/bin/mysqlbkp.py"
+
+Modify ~/backup/etc/mysqlbkpuser.cfg file by setting proper mysql user and password
+

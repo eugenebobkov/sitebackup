@@ -1,0 +1,9 @@
+[MAIN]
+BackupDir: ~/backup/site
+MySqlUserFile: ~/backup/etc/mysqlbkpuser.cfg
+
+[PURGE]
+DaysToKeep: 7
+
+[BACKUP]
+DirsToBackup:  ~/www
