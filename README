@@ -10,8 +10,8 @@ Get public key from backup account (.ssh/id_rsa.pub) and add it to target author
 Option 2:
 Get public key from backup account (.ssh/id_rsa.pub) and add it to target authorized_keys and authorized_keys2 files using File Manager
 
-scp bkp-0.10.tar.gz target-user@target-site.com:~/
-ssh -C target-user@target-site.com "tar xfz bkp-0.10.tar.gz"
+scp sitebackup-0.10.tar.gz target-user@target-site.com:~/
+ssh -C target-user@target-site.com "tar xfz sitebackup-0.10.tar.gz"
 ssh -C target-user@target-site.com "chmod 700 ~/backup/bin/mysqlbkp.py"
 
 Modify ~/backup/etc/mysqlbkpuser.cfg file by setting proper mysql user and password
