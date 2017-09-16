@@ -15,7 +15,7 @@ def run_command(cmd):
 
 def ldownload(tuser, tport, tdomain):
     print 'Executing remote preparation script'
-    cmd = ['ssh', '-p', tport, '-C', tuser+'@'+tdomain, '~/sitebackup/bin/mysqlbkp.py']
+    cmd = ['ssh', '-p', tport, '-C', tuser+'@'+tdomain, 'python ~/sitebackup/bin/mysqlbkp.py']
     rc = run_command(cmd)
     if rc != 0:
         print "Remote execution returned non zero code! Exiting..."
@@ -226,7 +226,7 @@ def main():
     if not '--port' in sys.argv:
         tport = 22
     else:
-        tport = int(sys.argv[sys.argv.index('--port')+1])
+        tport = str(sys.argv[sys.argv.index('--port')+1])
 
     if not '--purge' in sys.argv:
         tpurge = '' 
