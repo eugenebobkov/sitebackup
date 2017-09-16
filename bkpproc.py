@@ -13,30 +13,30 @@ def run_command(cmd):
     return p.returncode
 
 
-def ldownload(tuser, tdomain):
+def ldownload(tuser, tport, tdomain):
     print 'Executing remote preparation script'
-    cmd = ['ssh','-C',tuser+'@'+tdomain,'~/backup/bin/mysqlbkp.py']
+    cmd = ['ssh', '-p', tport, '-C', tuser+'@'+tdomain, '~/backup/bin/mysqlbkp.py']
     rc = run_command(cmd)
     if rc != 0:
         print "Remote execution returned non zero code! Exiting..."
         sys.exit(1)
 
     print 'Getting list of directories'
-    cmd = ['scp','-C',tuser+'@'+tdomain+':~/backup/site/dirlist','.']
+    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/backup/site/dirlist','.']
     rc = run_command(cmd)
     if rc != 0:
         print "Transfer of dirlist was not successful and returned non zero code! Exiting..."
         sys.exit(1)
 
     print 'Getting list of files to backup'
-    cmd = ['scp','-C',tuser+'@'+tdomain+':~/backup/site/filelist','.']
+    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/backup/site/filelist','.']
     rc = run_command(cmd)
     if rc != 0:
         print "Transfer of filelist was not successful and returned non zero code! Exiting..."
         sys.exit(1)
 
     print 'Getting current mysql backups'
-    cmd = ['scp','-C',tuser+'@'+tdomain+':~/backup/site/current-*.sql.gz','.']
+    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/backup/site/current-*.sql.gz','.']
     rc = run_command(cmd)
     if rc != 0:
         print "Transfer of database backups was not successful and returned non zero code! Exiting..."
@@ -169,7 +169,7 @@ def sync(cdir, tuser, tport, tdomain):
     return sshc.returncode
 
 def purge(cdir,tpurge):
-    print "Removing folders older than",tpurge,"days relatevely to",cdir
+    print "Removing folders older than", tpurge, "days relatevely to", cdir
     os.chdir(os.path.abspath(os.path.join(cdir,'..')))
     bkpdir = os.getcwd()
     pb = [d for d in os.listdir('.') if os.path.isdir(d) and os.path.abspath(d) != cdir and os.path.getmtime(os.path.abspath(d)) < os.path.getmtime(os.path.abspath(cdir))-24*60*60*tpurge ]
@@ -199,8 +199,10 @@ Subject: %s
     except:
         print "Error: unable to send email",sys.exc_info()[0]
 
+
 def repeatSync(cdir, tuser, tdomain):
     print "Not implemented yet"
+
 
 def main():
 
@@ -231,26 +233,25 @@ def main():
     else:
         tpurge = int(sys.argv[sys.argv.index('--purge')+1])
 
-    cdir = os.path.join(bkproot,tdomain,datetime.datetime.now().strftime('%Y%m%d%H%M'))
-    dlist = os.path.join(cdir,'dirlist')
-    flist = os.path.join(cdir,'filelist')
+    cdir = os.path.join(bkproot, tdomain, datetime.datetime.now().strftime('%Y%m%d%H%M'))
+    dlist = os.path.join(cdir, 'dirlist')
+    flist = os.path.join(cdir, 'filelist')
 
     if not os.access(cdir, os.W_OK):
         os.makedirs(cdir)
 
     os.chdir(cdir)
     print "Current directory:",cdir
-    ldownload(tuser,tdomain)
+    ldownload(tuser, tport, tdomain)
 
     prepare(cdir)
 
-    while sync(cdir,tuser,tdomain) > 0:
+    while sync(cdir, tuser, tport, tdomain) > 0:
         print "Non zero sync responce, repeating prepare"
         prepare(cdir)
 
-
     if tpurge:
-        purge(cdir,tpurge)
+        purge(cdir, tpurge)
    
     report("Report for " + tdomain + " completed", 'eof')
 
