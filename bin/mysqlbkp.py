@@ -19,15 +19,17 @@ def check_location(file, desc):
 # read configuration file and input parameters
 def init_config(args):
     # check if config file was provided and assign it to variable
-    if not '--config' in args and not os.access(os.path.expanduser('~/backup/etc/mysqlbkp.cfg'), os.R_OK):
+    if not '--config' in args and not os.access(os.path.expanduser('~/sitebackup/etc/mysqlbkp.cfg'), os.R_OK):
         print 'Error: Configuration file was not found' 
 	print_usage(args[0])
     else:
         configfile = ConfigParser.SafeConfigParser()
         if not '--config' in args:
-            configfile.read(os.path.expanduser('~/backup/etc/mysqlbkp.cfg'))
+            configfile.read(os.path.expanduser('~/sitebackup/etc/mysqlbkp.cfg'))
+            config['MAIN.MySqlUserFile'] = check_location(os.path.expanduser('~/sitebackup/etc/mysqlbkp.cfg'), 'Configuration file')
         else:
 	    configfile.read(check_location(args[args.index('--config')+1], 'Configuration file'))
+            config['MAIN.MySqlUserFile'] = check_location(args[args.index('--config')+1], 'Configuration file')
             args.pop(args.index('--config')+1)
             args.pop(args.index('--config'))
 
@@ -40,25 +42,25 @@ def init_config(args):
     
     # Parsing of comandline parameters
     if '--dir' in args:
-        config['MAIN.BackupDir'] = check_location(args[args.index('--dir')+1], 'Backup directory')
-        args.pop(args.index('--dir')+1)
+        config['MAIN.BackupDir'] = check_location(args[args.index('--dir') + 1], 'Backup directory')
+        args.pop(args.index('--dir') + 1)
         args.pop(args.index('--dir'))
     else:
-        config['MAIN.BackupDir'] = check_location(configfile.get('MAIN','BackupDir'),'Backup directory')
+        config['MAIN.BackupDir'] = check_location(configfile.get('MAIN', 'BackupDir'), 'Backup directory')
     if '--pf' in args:
         config['MAIN.MySqlUserFile'] = check_location(args[args.index('--pf')+1],'MySQL connection file')
         args.pop(args.index('--pf')+1)
         args.pop(args.index('--pf'))
     else:
-        config['MAIN.MySqlUserFile'] = check_location(configfile.get('MAIN','MySqlUserFile'),'MySQL connection file')
+        config['MAIN.MySqlUserFile'] = check_location(args[args.index('--config')+1], 'Configuration file')
 
     if len(args) > 1:
         print args
         print_usage(args[0]) 
     
     # Populate configuration structure from config file
-    config['PURGE.DaysToKeep'] = configfile.get('PURGE','DaysToKeep')
-    config['BACKUP.DirsToBackup'] = configfile.get('BACKUP','DirsToBackup')
+    config['PURGE.DaysToKeep'] = configfile.get('PURGE', 'DaysToKeep')
+    config['BACKUP.DirsToBackup'] = configfile.get('BACKUP', 'DirsToBackup')
 
     return config
  

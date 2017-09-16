@@ -15,28 +15,28 @@ def run_command(cmd):
 
 def ldownload(tuser, tport, tdomain):
     print 'Executing remote preparation script'
-    cmd = ['ssh', '-p', tport, '-C', tuser+'@'+tdomain, '~/backup/bin/mysqlbkp.py']
+    cmd = ['ssh', '-p', tport, '-C', tuser+'@'+tdomain, '~/sitebackup/bin/mysqlbkp.py']
     rc = run_command(cmd)
     if rc != 0:
         print "Remote execution returned non zero code! Exiting..."
         sys.exit(1)
 
     print 'Getting list of directories'
-    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/backup/site/dirlist','.']
+    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/sitebackup/site/dirlist','.']
     rc = run_command(cmd)
     if rc != 0:
         print "Transfer of dirlist was not successful and returned non zero code! Exiting..."
         sys.exit(1)
 
     print 'Getting list of files to backup'
-    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/backup/site/filelist','.']
+    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/sitebackup/site/filelist','.']
     rc = run_command(cmd)
-    if rc != 0:
+    if rc != 0:     
         print "Transfer of filelist was not successful and returned non zero code! Exiting..."
         sys.exit(1)
 
     print 'Getting current mysql backups'
-    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/backup/site/current-*.sql.gz','.']
+    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/sitebackup/site/current-*.sql.gz','.']
     rc = run_command(cmd)
     if rc != 0:
         print "Transfer of database backups was not successful and returned non zero code! Exiting..."
@@ -137,7 +137,7 @@ def sync(cdir, tuser, tport, tdomain):
     delta = os.path.join(cdir,'delta')
 
     # push delta to target system
-    cmd = ['scp', '-P', tport, os.path.join(cdir, 'delta'), tuser+'@'+tdomain+':~/backup/site/delta']
+    cmd = ['scp', '-P', tport, os.path.join(cdir, 'delta'), tuser+'@'+tdomain+':~/sitebackup/site/delta']
 
     try:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -155,7 +155,7 @@ def sync(cdir, tuser, tport, tdomain):
 
     # get files from delta back to backup system
     cat = ['tar', 'xfz', '-']
-    ssh = ['ssh', '-p', tport, tuser + '@' + tdomain, 'tar cfz - -T ~/backup/site/delta']
+    ssh = ['ssh', '-p', tport, tuser + '@' + tdomain, 'tar cfz - -T ~/sitebackup/site/delta']
 
     sshc = subprocess.Popen(ssh, stdout=subprocess.PIPE, stderr=sys.stdout)
     catc = subprocess.call(cat, stdin=sshc.stdout, stdout=sys.stdout, stderr=sys.stdout)
@@ -193,11 +193,11 @@ Subject: %s
     try:
         smtp = smtplib.SMTP('smtp.gmail.com', 587)
         smtp.starttls()
-        smtp.login(sender,password)
+        smtp.login(sender, password)
         smtp.sendmail(sender, to, message)
         print "Successfully sent email"
     except:
-        print "Error: unable to send email",sys.exc_info()[0]
+        print "Error: unable to send email", sys.exc_info()[0]
 
 
 def repeatSync(cdir, tuser, tdomain):
@@ -226,7 +226,7 @@ def main():
     if not '--port' in sys.argv:
         tport = 22
     else:
-        tport = sys.argv[sys.argv.index('--port')+1]
+        tport = int(sys.argv[sys.argv.index('--port')+1])
 
     if not '--purge' in sys.argv:
         tpurge = '' 
@@ -241,7 +241,7 @@ def main():
         os.makedirs(cdir)
 
     os.chdir(cdir)
-    print "Current directory:",cdir
+    print "Current directory:", cdir
     ldownload(tuser, tport, tdomain)
 
     prepare(cdir)

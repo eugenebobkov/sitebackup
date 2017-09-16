@@ -1,0 +1,13 @@
+[MAIN]
+BackupDir: ~/sitebackup/site
+
+[PURGE]
+DaysToKeep: 7
+
+[BACKUP]
+DirsToBackup:  ~/www
+
+[client]
+user = _backup
+password = 
+host = localhost
