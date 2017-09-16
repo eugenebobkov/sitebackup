@@ -48,13 +48,7 @@ def init_config(args):
         args.pop(args.index('--dir'))
     else:
         config['MAIN.BackupDir'] = check_location(configfile.get('MAIN', 'BackupDir'), 'Backup directory')
-    if '--pf' in args:
-        config['MAIN.MySqlUserFile'] = check_location(args[args.index('--pf')+1],'MySQL connection file')
-        args.pop(args.index('--pf')+1)
-        args.pop(args.index('--pf'))
-    else:
-        config['MAIN.MySqlUserFile'] = check_location(args[args.index('--config')+1], 'Configuration file')
-
+    
     if len(args) > 1:
         print args
         print_usage(args[0]) 
