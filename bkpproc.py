@@ -131,13 +131,13 @@ def prepare(cdir):
                         file_out.write(line.split('|')[0]+'\n')
 
 
-def sync(cdir,tuser,tdomain):
+def sync(cdir, tuser, tport, tdomain):
 
     print 'Push delta to target system'
     delta = os.path.join(cdir,'delta')
 
     # push delta to target system
-    cmd = ['scp', os.path.join(cdir,'delta'), tuser+'@'+tdomain+':~/backup/site/delta']
+    cmd = ['scp', '-P', tport, os.path.join(cdir, 'delta'), tuser+'@'+tdomain+':~/backup/site/delta']
 
     try:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -155,7 +155,7 @@ def sync(cdir,tuser,tdomain):
 
     # get files from delta back to backup system
     cat = ['tar', 'xfz', '-']
-    ssh = ['ssh', tuser + '@' + tdomain, 'tar cfz - -T ~/backup/site/delta']
+    ssh = ['ssh', '-p', tport, tuser + '@' + tdomain, 'tar cfz - -T ~/backup/site/delta']
 
     sshc = subprocess.Popen(ssh, stdout=subprocess.PIPE, stderr=sys.stdout)
     catc = subprocess.call(cat, stdin=sshc.stdout, stdout=sys.stdout, stderr=sys.stdout)
@@ -199,7 +199,7 @@ Subject: %s
     except:
         print "Error: unable to send email",sys.exc_info()[0]
 
-def repeatSync(cdir,tuser,tdomain):
+def repeatSync(cdir, tuser, tdomain):
     print "Not implemented yet"
 
 def main():
@@ -221,6 +221,11 @@ def main():
     else:
         tdomain = sys.argv[sys.argv.index('--domain')+1]
 
+    if not '--port' in sys.argv:
+        tport = 22
+    else:
+        tport = sys.argv[sys.argv.index('--port')+1]
+
     if not '--purge' in sys.argv:
         tpurge = '' 
     else:
@@ -231,7 +236,7 @@ def main():
     flist = os.path.join(cdir,'filelist')
 
     if not os.access(cdir, os.W_OK):
-       os.makedirs(cdir)
+        os.makedirs(cdir)
 
     os.chdir(cdir)
     print "Current directory:",cdir
