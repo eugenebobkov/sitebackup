@@ -18,6 +18,14 @@ def check_location(file, desc):
  
 # read configuration file and input parameters
 def init_config(args):
+
+    config = {
+        'MAIN.BackupDir' : '',
+        'MAIN.MySqlUserFile' : '',
+        'PURGE.DaysToKeep' : '',
+        'BACKUP.DirsToBackup' : ''
+    }
+
     # check if config file was provided and assign it to variable
     if not '--config' in args and not os.access(os.path.expanduser('~/sitebackup/etc/mysqlbkp.cfg'), os.R_OK):
         print 'Error: Configuration file was not found' 
@@ -32,13 +40,6 @@ def init_config(args):
             config['MAIN.MySqlUserFile'] = check_location(args[args.index('--config')+1], 'Configuration file')
             args.pop(args.index('--config')+1)
             args.pop(args.index('--config'))
-
-    config = {
-        'MAIN.BackupDir' : '',
-        'MAIN.MySqlUserFile' : '',
-        'PURGE.DaysToKeep' : '',
-        'BACKUP.DirsToBackup' : ''
-    }
     
     # Parsing of comandline parameters
     if '--dir' in args:
