@@ -15,7 +15,7 @@ def run_command(cmd):
 
 def ldownload(tuser, tport, tdomain):
     print('Executing remote preparation script')
-    cmd = ['ssh', '-p', tport, '-C', tuser+'@'+tdomain, 'python ~/sitebackup/bin/mysqlbkp.py']
+    cmd = ['ssh', '-p', tport, '-C', tuser+'@'+tdomain, 'python3 ~/sitebackup/bin/mysqlbkp.py']
     rc = run_command(cmd)
     if rc != 0:
         print("Remote execution returned non zero code! Exiting...")
@@ -258,3 +258,4 @@ def main():
 if __name__ == '__main__':
     main()
 
+                                       -
