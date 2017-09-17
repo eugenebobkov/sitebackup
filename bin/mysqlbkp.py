@@ -12,7 +12,7 @@ def check_location(file, desc):
     expandfile = os.path.expanduser(file)
     if not os.path.exists(expandfile):
         print('Error:', desc, file, 'was not found')
-    sys.exit(1)
+        sys.exit(1)
     else:
         return expandfile
  
@@ -29,7 +29,7 @@ def init_config(args):
     # check if config file was provided and assign it to variable
     if not '--config' in args and not os.access(os.path.expanduser('~/sitebackup/etc/mysqlbkp.cfg'), os.R_OK):
         print('Error: Configuration file was not found') 
-    print_usage(args[0])
+        print_usage(args[0])
     else:
         configfile = configparser.SafeConfigParser()
         if not '--config' in args:
