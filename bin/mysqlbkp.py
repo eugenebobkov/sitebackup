@@ -12,7 +12,7 @@ def check_location(file, desc):
     expandfile = os.path.expanduser(file)
     if not os.path.exists(expandfile):
         print('Error:', desc, file, 'was not found')
-	sys.exit(1)
+    sys.exit(1)
     else:
         return expandfile
  
@@ -29,14 +29,14 @@ def init_config(args):
     # check if config file was provided and assign it to variable
     if not '--config' in args and not os.access(os.path.expanduser('~/sitebackup/etc/mysqlbkp.cfg'), os.R_OK):
         print('Error: Configuration file was not found') 
-	print_usage(args[0])
+    print_usage(args[0])
     else:
         configfile = configparser.SafeConfigParser()
         if not '--config' in args:
             configfile.read(os.path.expanduser('~/sitebackup/etc/mysqlbkp.cfg'))
             config['MAIN.MySqlUserFile'] = check_location(os.path.expanduser('~/sitebackup/etc/mysqlbkp.cfg'), 'Configuration file')
         else:
-	    configfile.read(check_location(args[args.index('--config')+1], 'Configuration file'))
+        configfile.read(check_location(args[args.index('--config')+1], 'Configuration file'))
             config['MAIN.MySqlUserFile'] = check_location(args[args.index('--config')+1], 'Configuration file')
             args.pop(args.index('--config')+1)
             args.pop(args.index('--config'))
@@ -78,8 +78,8 @@ def mysql_dblist(cnf):
 
     if len(dblist) == 0:
         print("Doesn't appear to be any databases found")
-	sys.exit(1)
-	 
+    sys.exit(1)
+     
     return dblist
  
 # backup of databases which are available for provided mysql user, this user has to have SELECT and LOCK TABLE for this database
@@ -95,18 +95,18 @@ def mysql_backup(config, dblist):
 
         # 3 attempts to backup database, sometimes backup can fail without any good reason(server watchdog), in this case we would like to try it again 
         i = 1
-	while i != 3:
+        while i != 3:
             try:
                 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-		outp = p.communicate()[0]
+        outp = p.communicate()[0]
 
-		gz = gzip.open(bfile+'.gz','wb')
-		gz.write(outp)
-		retcode = p.wait()
+        gz = gzip.open(bfile+'.gz','wb')
+        gz.write(outp)
+        retcode = p.wait()
             except:
-		retcode = 255
+        retcode = 255
 
-	    gz.close()
+        gz.close()
 
             # re-point symlink to the latest database backup
             if os.access(os.path.join(os.path.expanduser(config['MAIN.BackupDir']),'current-'+db+'.sql.gz'), os.F_OK):
@@ -116,14 +116,14 @@ def mysql_backup(config, dblist):
             # backup was not successful - remove partially completed file and inc counter
             if retcode > 0:
                 i += 1
-	        bresults[db] = 'backup error'
-		if os.path.exists(bfile):
+            bresults[db] = 'backup error'
+        if os.path.exists(bfile):
                     os.remove(bfile)
-	    else:
+        else:
                 # backup completed successfully - we have to reset couner for the next one if there are any and break 'while' cycle
                 i = 3
-	        bresults[db] = 'backup ok'
-		break
+            bresults[db] = 'backup ok'
+        break
 
 # prepare list of files for backup, which will be downloaded over sftp and list of directories, which will be created on destination host
 def fs_backup(config):
@@ -133,11 +133,11 @@ def fs_backup(config):
     d = open(dlist,'w')
     for (dirpath, dirnames, filenames) in walk(os.path.expanduser(config['BACKUP.DirsToBackup'])):
         if filenames:
-	    d.write(dirpath+'\n')
+        d.write(dirpath+'\n')
             for fn in filenames:
                 fpath = os.path.join(dirpath,fn)
                 try:
-		    f.write(fpath+'|'+str(os.path.getsize(fpath))+'|'+str(os.path.getmtime(fpath))+'\n')
+            f.write(fpath+'|'+str(os.path.getsize(fpath))+'|'+str(os.path.getmtime(fpath))+'\n')
                 except:
                     print('Could not get info for',fpath)
     f.close()
