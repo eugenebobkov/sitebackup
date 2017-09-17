@@ -177,7 +177,7 @@ def purge(cdir,tpurge):
 
 def report(subject,body):
     sender = 'webbackup.p3w@gmail.com'
-    password = 'sKL89BLHx5YM4MNZxzua'
+    password = 'v6bzQEZisdiq5jKpYaTI'
     to = ['webbackup.p3w@gmail.com']
     message = """\
 From: %s
