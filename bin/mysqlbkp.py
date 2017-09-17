@@ -69,7 +69,9 @@ def mysql_dblist(cnf):
         print('MySQL Error:')
         print(stderr)
         sys.exit(1)
-    dblist = stdout.strip().split('\n')
+
+    # in python 3 stdout returns bytes, so it has to be decoded 
+    dblist = stdout.decode().strip().split('\n')
     for item in no_backup:
         try:
             dblist.remove(item)
