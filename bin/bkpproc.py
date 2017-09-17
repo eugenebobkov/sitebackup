@@ -160,13 +160,10 @@ def sync(cdir, tuser, tport, tdomain):
     sshc = subprocess.Popen(ssh, stdout=subprocess.PIPE, stderr=sys.stdout)
     catc = subprocess.call(cat, stdin=sshc.stdout, stdout=sys.stdout, stderr=sys.stdout)
 
-    if sshc.returncode > 0:
-        print("Delta transfer process was unexpectedly terminated")
-
     if catc > 0:
-        print("Issue with writing files on local drive")
+        print("Issue with transfer and writing files on local drive")
 
-    return sshc.returncode
+    return catc
 
 def purge(cdir,tpurge):
     print("Removing folders older than", tpurge, "days relatevely to", cdir)
@@ -197,7 +194,7 @@ Subject: %s
         smtp.sendmail(sender, to, message)
         print("Successfully sent email")
     except:
-        print("Error: unable to send email", sys.exc_info()[0])
+        print("Error: unable to send email", sys.exc_info())
 
 
 def repeatSync(cdir, tuser, tdomain):
