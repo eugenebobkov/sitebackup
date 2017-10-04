@@ -18,7 +18,7 @@ def ldownload(tuser, tport, tdomain):
     cmd = ['ssh', '-p', tport, '-C', tuser+'@'+tdomain, 'python3 ~/sitebackup/bin/mysqlbkp.py']
     rc = run_command(cmd)
     if rc != 0:
-        print("Remote execution returned non zero code! Exiting...")
+        print("Remote execution returned non zero code! Exiting...", sys.exc_info())
         sys.exit(1)
 
     print('Getting list of directories')
@@ -143,7 +143,7 @@ def sync(cdir, tuser, tport, tdomain):
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
     except:
-        print("Could not push delta due to error :",sys.exc_info()[0])
+        print("Could not push delta due to error :", sys.exc_info())
         sys.exit(1)
  
     if p.returncode > 0:

@@ -18,7 +18,7 @@ or
 git clone https://github.com/eugenebobkov/sitebackup.git
 
 for update
-cd ~sitebackup
+cd ~/sitebackup
 git pull
 
 Update ~sitebackup/etc/mysqlbkp.cfg [client]
