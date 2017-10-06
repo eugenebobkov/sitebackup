@@ -2,7 +2,14 @@
  
 from os import walk
  
-import re, time, datetime, configparser, sys, os, subprocess, gzip
+import re
+import time
+import datetime
+import configparser
+import sys
+import os
+import subprocess
+import gzip
  
 def print_usage(script):
     print('Usage:', script, '--config <config file>', '--dir <target backup directory>', '--pf <mysql password file>')
@@ -31,7 +38,7 @@ def init_config(args):
         print('Error: Configuration file was not found') 
         print_usage(args[0])
     else:
-        configfile = configparser.SafeConfigParser()
+        configfile = configparser.ConfigParser()
         if not '--config' in args:
             configfile.read(os.path.expanduser('~/sitebackup/etc/mysqlbkp.cfg'))
             config['MAIN.MySqlUserFile'] = check_location(os.path.expanduser('~/sitebackup/etc/mysqlbkp.cfg'), 'Configuration file')
@@ -62,7 +69,7 @@ def init_config(args):
 # create list of databases which are available for provided mysql user, this user has to have SELECT and LOCK TABLE for this database
 def mysql_dblist(cnf):
     no_backup = ['Database', 'information_schema', 'performance_schema', 'test']
-    cmd = ['mysql', '--defaults-extra-file='+cnf, '-e', 'show databases']
+    cmd = ['mysql', '--defaults-extra-file=' + cnf, '-e', 'show databases']
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     if p.returncode > 0:
@@ -139,9 +146,9 @@ def fs_backup(config):
             for fn in filenames:
                 fpath = os.path.join(dirpath,fn)
                 try:
-                    f.write(fpath+'|'+str(os.path.getsize(fpath))+'|'+str(os.path.getmtime(fpath))+'\n')
+                    f.write(fpath + '|' + str(os.path.getsize(fpath)) + '|' + str(os.path.getmtime(fpath)) + '\n')
                 except:
-                    print('Could not get info for',fpath)
+                    print('Could not get info for', fpath)
     f.close()
     d.close()
 

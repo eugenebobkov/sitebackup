@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 
-import sys, os, datetime, subprocess, re, shutil, smtplib
+import sys
+import os
+import datetime
+import subprocess
+import re
+import shutil
+import smtplib
 
 
 def run_command(cmd):
@@ -8,35 +14,35 @@ def run_command(cmd):
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
     except:
-        print("Could not run command",cmd,sys.exc_info()[0])
+        print("Could not run command", cmd, sys.exc_info()[0])
         sys.exit(1)
     return p.returncode
 
 
 def ldownload(tuser, tport, tdomain):
     print('Executing remote preparation script')
-    cmd = ['ssh', '-p', tport, '-C', tuser+'@'+tdomain, 'python3 ~/sitebackup/bin/mysqlbkp.py']
+    cmd = ['ssh', '-p', tport, '-C', tuser+'@' + tdomain, 'python3 ~/sitebackup/bin/mysqlbkp.py']
     rc = run_command(cmd)
     if rc != 0:
         print("Remote execution returned non zero code! Exiting...", sys.exc_info())
         sys.exit(1)
 
     print('Getting list of directories')
-    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/sitebackup/site/dirlist','.']
+    cmd = ['scp', '-P', tport, '-C', tuser + '@' + tdomain + ':~/sitebackup/site/dirlist', '.']
     rc = run_command(cmd)
     if rc != 0:
         print("Transfer of dirlist was not successful and returned non zero code! Exiting...")
         sys.exit(1)
 
     print('Getting list of files to backup')
-    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/sitebackup/site/filelist','.']
+    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/sitebackup/site/filelist', '.']
     rc = run_command(cmd)
     if rc != 0:     
         print("Transfer of filelist was not successful and returned non zero code! Exiting...")
         sys.exit(1)
 
     print('Getting current mysql backups')
-    cmd = ['scp', '-P', tport, '-C', tuser+'@'+tdomain+':~/sitebackup/site/current-*.sql.gz','.']
+    cmd = ['scp', '-P', tport, '-C', tuser+'@' + tdomain + ':~/sitebackup/site/current-*.sql.gz', '.']
     rc = run_command(cmd)
     if rc != 0:
         print("Transfer of database backups was not successful and returned non zero code! Exiting...")
@@ -46,21 +52,20 @@ def ldownload(tuser, tport, tdomain):
 def prepare(cdir):
     
     # find previous backup list
-    os.chdir(os.path.abspath(os.path.join(cdir,'..')))
+    os.chdir(os.path.abspath(os.path.join(cdir, '..')))
 
     if len(os.listdir(os.getcwd())) > 1:
         pb = max([d for d in os.listdir('.') if os.path.isdir(d) and os.path.abspath(d) != cdir], key=os.path.getmtime)
-        print('Previous backup directory:',pb)
-        if os.access(os.path.join(os.path.abspath(os.path.join(cdir,'..',pb)),'filelist'), os.R_OK):
-            pflist = os.path.join(os.path.abspath(os.path.join(cdir,'..',pb)),'filelist')
-            print('Previous backup filelist:',pflist)
+        print('Previous backup directory:', pb)
+        if os.access(os.path.join(os.path.abspath(os.path.join(cdir, '..', pb)), 'filelist'), os.R_OK):
+            pflist = os.path.join(os.path.abspath(os.path.join(cdir, '..', pb)), 'filelist')
+            print('Previous backup filelist:', pflist)
         else:
             print('Privous backup filelist does not exist')
             pb = ''
     else:
-       pb = ''
-       print('Previous backup does not exist')
-
+        pb = ''
+        print('Previous backup does not exist')
 
     dlist = os.path.join(cdir,'dirlist')
     flist = os.path.join(cdir,'filelist')
@@ -94,9 +99,9 @@ def prepare(cdir):
 
     # create directories for all files
     print('Creation of local directories')
-    with open(dlist,'r') as d:
+    with open(dlist, 'r') as d:
         for pth in d.readlines():
-            os.makedirs(cdir+pth.strip('\n'))
+            os.makedirs(cdir + pth.strip('\n'))
 
     # if previous backup exists
     if pb:
@@ -105,7 +110,7 @@ def prepare(cdir):
         # and file which were already copied in previous attempts
         with open(delta, 'w') as file_out:
             for line in diff:
-                if not re.search('/tmp/|/cache/|/thumbnails/',line.split('|')[0]) and not os.path.exists(os.path.join(cdir,line.split('|')[0]).lstrip(os.path.sep)):
+                if not re.search('/tmp/|/cache/|/thumbnails/', line.split('|')[0]) and not os.path.exists(os.path.join(cdir, line.split('|')[0]).lstrip(os.path.sep)):
                     file_out.write(line.split('|')[0]+'\n')
 
         # add files which exist in both filelists, but could not be found in prev backup on fs, ignore temporary files
@@ -114,27 +119,27 @@ def prepare(cdir):
             for line in same:
                 if not os.access(os.path.join(cdir,'..', pb, line.split('|')[0].lstrip(os.path.sep)), os.R_OK):
                     if not re.search('/tmp/|/cache/|/thumbnails/',line.split('|')[0]) and not os.path.exists(os.path.join(cdir,line.split('|')[0]).lstrip(os.path.sep)):
-                        file_out.write(line.split('|')[0]+'\n')
+                        file_out.write(line.split('|')[0] + '\n')
                 else:
-                    if not os.path.exists(os.path.join(cdir,line.split('|')[0]).lstrip(os.path.sep)):
-                        shutil.copy(os.path.join(cdir,'..', pb, line.split('|')[0].lstrip(os.path.sep)), os.path.join(cdir, line.split('|')[0].lstrip(os.path.sep)))
+                    if not os.path.exists(os.path.join(cdir, line.split('|')[0]).lstrip(os.path.sep)):
+                        shutil.copy(os.path.join(cdir, '..', pb, line.split('|')[0].lstrip(os.path.sep)), os.path.join(cdir, line.split('|')[0].lstrip(os.path.sep)))
 
     # if there were no previos backups and we have to build it from scratch
     # and file which were already copied in previous attempts
     else:
         print('Delta generated using current filelist')
-        with open(flist,'r') as file1:
+        with open(flist, 'r') as file1:
             with open(delta, 'w') as file_out:
                 for line in file1:
                     # everything except temporary files will be backed up
-                    if not re.search('/tmp/|/cache/|/thumbnails/',line.split('|')[0]) and not os.path.exists(os.path.join(cdir,line.split('|')[0].lstrip(os.path.sep))):
-                        file_out.write(line.split('|')[0]+'\n')
+                    if not re.search('/tmp/|/cache/|/thumbnails/', line.split('|')[0]) and not os.path.exists(os.path.join(cdir, line.split('|')[0].lstrip(os.path.sep))):
+                        file_out.write(line.split('|')[0] + '\n')
 
 
 def sync(cdir, tuser, tport, tdomain):
 
     print('Push delta to target system')
-    delta = os.path.join(cdir,'delta')
+    delta = os.path.join(cdir, 'delta')
 
     # push delta to target system
     cmd = ['scp', '-P', tport, os.path.join(cdir, 'delta'), tuser+'@'+tdomain+':~/sitebackup/site/delta']
@@ -165,17 +170,18 @@ def sync(cdir, tuser, tport, tdomain):
 
     return catc
 
-def purge(cdir,tpurge):
+
+def purge(cdir, tpurge):
     print("Removing folders older than", tpurge, "days relatevely to", cdir)
-    os.chdir(os.path.abspath(os.path.join(cdir,'..')))
+    os.chdir(os.path.abspath(os.path.join(cdir, '..')))
     bkpdir = os.getcwd()
     pb = [d for d in os.listdir('.') if os.path.isdir(d) and os.path.abspath(d) != cdir and os.path.getmtime(os.path.abspath(d)) < os.path.getmtime(os.path.abspath(cdir))-24*60*60*tpurge ]
     for d in pb:
-        print("  Removing",d,"...")
+        print("  Removing", d, "...")
         shutil.rmtree(os.path.abspath(d))
 
 
-def report(subject,body):
+def report(subject, body):
     sender = 'webbackup.p3w@gmail.com'
     password = 'v6bzQEZisdiq5jKpYaTI'
     to = ['webbackup.p3w@gmail.com']
@@ -185,7 +191,7 @@ To: %s
 Subject: %s
 
 %s
-""" % (sender,','.join(to),subject,body)
+""" % (sender, ','.join(to), subject, body)
 
     try:
         smtp = smtplib.SMTP('smtp.gmail.com', 587)
@@ -203,32 +209,32 @@ def repeatSync(cdir, tuser, tdomain):
 
 def main():
 
-    if not '--dir' in sys.argv:
-        bkproot = '/data/WebBackup'
+    if '--dir' in sys.argv:
+        bkproot = sys.argv[sys.argv.index('--dir') + 1]
     else:
-        bkproot = sys.argv[sys.argv.index('--dir')+1]
+        bkproot = '/data/WebBackup'
 
-    if not '--user' in sys.argv:
+    if '--user' in sys.argv:
+        tuser = sys.argv[sys.argv.index('--user') + 1]
+    else:
         print('No --user defined')
         sys.exit(1)
-    else:
-        tuser = sys.argv[sys.argv.index('--user')+1]
 
-    if not '--domain' in sys.argv:
+    if '--domain' in sys.argv:
+        tdomain = sys.argv[sys.argv.index('--domain') + 1]
+    else:
         print('No --domain defined')
         sys.exit(1)
-    else:
-        tdomain = sys.argv[sys.argv.index('--domain')+1]
 
-    if not '--port' in sys.argv:
+    if '--port' in sys.argv:
+        tport = str(sys.argv[sys.argv.index('--port') + 1])
+    else:
         tport = 22
-    else:
-        tport = str(sys.argv[sys.argv.index('--port')+1])
 
-    if not '--purge' in sys.argv:
-        tpurge = '' 
+    if '--purge' in sys.argv:
+        tpurge = int(sys.argv[sys.argv.index('--purge') + 1])
     else:
-        tpurge = int(sys.argv[sys.argv.index('--purge')+1])
+        tpurge = ''
 
     cdir = os.path.join(bkproot, tdomain, datetime.datetime.now().strftime('%Y%m%d%H%M'))
     dlist = os.path.join(cdir, 'dirlist')
