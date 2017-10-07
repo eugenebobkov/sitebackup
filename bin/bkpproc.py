@@ -67,9 +67,9 @@ def prepare(cdir):
         pb = ''
         print('Previous backup does not exist')
 
-    dlist = os.path.join(cdir,'dirlist')
-    flist = os.path.join(cdir,'filelist')
-    delta = os.path.join(cdir,'delta')
+    dlist = os.path.join(cdir, 'dirlist')
+    flist = os.path.join(cdir, 'filelist')
+    delta = os.path.join(cdir, 'delta')
 
     # ======================================================================================
 
@@ -110,15 +110,17 @@ def prepare(cdir):
         # and file which were already copied in previous attempts
         with open(delta, 'w') as file_out:
             for line in diff:
-                if not re.search('/tmp/|/cache/|/thumbnails/', line.split('|')[0]) and not os.path.exists(os.path.join(cdir, line.split('|')[0]).lstrip(os.path.sep)):
+                if not re.search('/tmp/|/cache/|/thumbnails/', line.split('|')[0]) and \
+                   not os.path.exists(os.path.join(cdir, line.split('|')[0]).lstrip(os.path.sep)):
                     file_out.write(line.split('|')[0]+'\n')
 
         # add files which exist in both filelists, but could not be found in prev backup on fs, ignore temporary files
         # and file which were already copied in previous attempts
         with open(delta, 'a') as file_out:
             for line in same:
-                if not os.access(os.path.join(cdir,'..', pb, line.split('|')[0].lstrip(os.path.sep)), os.R_OK):
-                    if not re.search('/tmp/|/cache/|/thumbnails/',line.split('|')[0]) and not os.path.exists(os.path.join(cdir,line.split('|')[0]).lstrip(os.path.sep)):
+                if not os.access(os.path.join(cdir, '..', pb, line.split('|')[0].lstrip(os.path.sep)), os.R_OK):
+                    if not re.search('/tmp/|/cache/|/thumbnails/', line.split('|')[0]) and \
+                       not os.path.exists(os.path.join(cdir, line.split('|')[0]).lstrip(os.path.sep)):
                         file_out.write(line.split('|')[0] + '\n')
                 else:
                     if not os.path.exists(os.path.join(cdir, line.split('|')[0]).lstrip(os.path.sep)):
@@ -132,7 +134,8 @@ def prepare(cdir):
             with open(delta, 'w') as file_out:
                 for line in file1:
                     # everything except temporary files will be backed up
-                    if not re.search('/tmp/|/cache/|/thumbnails/', line.split('|')[0]) and not os.path.exists(os.path.join(cdir, line.split('|')[0].lstrip(os.path.sep))):
+                    if not re.search('/tmp/|/cache/|/thumbnails/', line.split('|')[0]) and \
+                       not os.path.exists(os.path.join(cdir, line.split('|')[0].lstrip(os.path.sep))):
                         file_out.write(line.split('|')[0] + '\n')
 
 
@@ -174,7 +177,6 @@ def sync(cdir, tuser, tport, tdomain):
 def purge(cdir, tpurge):
     print("Removing folders older than", tpurge, "days relatevely to", cdir)
     os.chdir(os.path.abspath(os.path.join(cdir, '..')))
-    bkpdir = os.getcwd()
     pb = [d for d in os.listdir('.') if os.path.isdir(d) and os.path.abspath(d) != cdir and os.path.getmtime(os.path.abspath(d)) < os.path.getmtime(os.path.abspath(cdir))-24*60*60*tpurge ]
     for d in pb:
         print("  Removing", d, "...")
@@ -201,10 +203,6 @@ Subject: %s
         print("Successfully sent email")
     except:
         print("Error: unable to send email", sys.exc_info())
-
-
-def repeatSync(cdir, tuser, tdomain):
-    print("Not implemented yet")
 
 
 def main():
@@ -237,8 +235,6 @@ def main():
         tpurge = ''
 
     cdir = os.path.join(bkproot, tdomain, datetime.datetime.now().strftime('%Y%m%d%H%M'))
-    dlist = os.path.join(cdir, 'dirlist')
-    flist = os.path.join(cdir, 'filelist')
 
     if not os.access(cdir, os.W_OK):
         os.makedirs(cdir)
