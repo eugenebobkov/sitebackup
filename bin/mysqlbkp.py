@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
  
-from os import walk
- 
 import re
 import time
 import datetime
@@ -44,7 +42,7 @@ def init_config(args):
             config['MAIN.MySqlUserFile'] = check_location(os.path.expanduser('~/sitebackup/etc/mysqlbkp.cfg'), 'Configuration file')
         else:
             configfile.read(check_location(args[args.index('--config')+1], 'Configuration file'))
-            config['MAIN.MySqlUserFile'] = check_location(args[args.index('--config')+1], 'Configuration file')
+            config['MAIN.MySqlUserFile'] = check_location(args[args.index('--config') + 1], 'Configuration file')
             args.pop(args.index('--config')+1)
             args.pop(args.index('--config'))
     
@@ -96,7 +94,7 @@ def mysql_backup(config, dblist):
     bresults = {}
     ufile = os.path.expanduser(config['MAIN.MySqlUserFile'])
     for db in dblist:
-        bfile = os.path.join(os.path.expanduser(config['MAIN.BackupDir']), db+'_'+datetime.datetime.now().strftime('%Y%m%d%H%M')+'.sql')
+        bfile = os.path.join(os.path.expanduser(config['MAIN.BackupDir']), db + '_' + datetime.datetime.now().strftime('%Y%m%d%H%M')+'.sql')
         if db == 'mysql':
             cmd = ['mysqldump', '--defaults-extra-file='+ufile, '--max_allowed_packet=512M', '--events', db]
         else:
@@ -109,7 +107,7 @@ def mysql_backup(config, dblist):
                 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 outp = p.communicate()[0]
 
-                gz = gzip.open(bfile+'.gz','wb')
+                gz = gzip.open(bfile+'.gz', 'wb')
                 gz.write(outp)
                 retcode = p.wait()
             except:
@@ -118,9 +116,9 @@ def mysql_backup(config, dblist):
             gz.close()
 
             # re-point symlink to the latest database backup
-            if os.access(os.path.join(os.path.expanduser(config['MAIN.BackupDir']),'current-'+db+'.sql.gz'), os.F_OK):
-                os.unlink(os.path.join(os.path.expanduser(config['MAIN.BackupDir']),'current-'+db+'.sql.gz'))
-            os.symlink(bfile+'.gz',os.path.join(os.path.expanduser(config['MAIN.BackupDir']),'current-'+db+'.sql.gz'))
+            if os.access(os.path.join(os.path.expanduser(config['MAIN.BackupDir']),'current-' + db + '.sql.gz'), os.F_OK):
+                os.unlink(os.path.join(os.path.expanduser(config['MAIN.BackupDir']),'current-' + db + '.sql.gz'))
+            os.symlink(bfile+'.gz',os.path.join(os.path.expanduser(config['MAIN.BackupDir']),'current-' + db + '.sql.gz'))
 
             # backup was not successful - remove partially completed file and inc counter
             if retcode > 0:
@@ -140,7 +138,7 @@ def fs_backup(config):
     dlist = os.path.join(os.path.expanduser(config['MAIN.BackupDir']), 'dirlist')
     f = open(flist,'w')
     d = open(dlist,'w')
-    for (dirpath, dirnames, filenames) in walk(os.path.expanduser(config['BACKUP.DirsToBackup'])):
+    for (dirpath, dirnames, filenames) in os.walk(os.path.expanduser(config['BACKUP.DirsToBackup'])):
         if filenames:
             d.write(dirpath+'\n')
             for fn in filenames:
@@ -156,10 +154,10 @@ def fs_backup(config):
 def purge(config):
     print("Removing database backup older than",config['PURGE.DaysToKeep'],"days")
     os.chdir(os.path.abspath(config['MAIN.BackupDir']))
-    pb = [d for d in os.listdir('.') if os.path.isfile(d) and os.path.getmtime(os.path.abspath(d)) < time.time()-24*60*60*int(config['PURGE.DaysToKeep']) ]
+    pb = [d for d in os.listdir('.') if os.path.isfile(d) and os.path.getmtime(os.path.abspath(d)) < time.time() - 24 * 60 * 60 * int(config['PURGE.DaysToKeep']) ]
     for d in pb:
-        if re.search('gz$',d) != 'None':
-            print("  Removing",d,"...")
+        if re.search('gz$', d) != 'None':
+            print("  Removing", d, "...")
             os.remove(os.path.abspath(d))
 
 def main():

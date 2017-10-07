@@ -145,7 +145,7 @@ def sync(cdir, tuser, tport, tdomain):
     delta = os.path.join(cdir, 'delta')
 
     # push delta to target system
-    cmd = ['scp', '-P', tport, os.path.join(cdir, 'delta'), tuser+'@'+tdomain+':~/sitebackup/site/delta']
+    cmd = ['scp', '-P', tport, os.path.join(cdir, 'delta'), tuser + '@' + tdomain + ':~/sitebackup/site/delta']
 
     try:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -227,7 +227,7 @@ def main():
     if '--port' in sys.argv:
         tport = str(sys.argv[sys.argv.index('--port') + 1])
     else:
-        tport = 22
+        tport = str(22)
 
     if '--purge' in sys.argv:
         tpurge = int(sys.argv[sys.argv.index('--purge') + 1])
